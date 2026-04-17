@@ -1,0 +1,85 @@
+{
+  "name": "devforge-cli",
+  "version": "1.0.0",
+  "description": "A developer utility for scaffolding, linting, and automating boilerplate across npm packages, VS Code extensions, WordPress plugins, and Shopify apps.",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "devforge": "bin/devforge.js"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "templates"
+  ],
+  "scripts": {
+    "build": "tsc && rollup -c",
+    "dev": "tsc --watch",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier --write src/**/*.ts",
+    "test": "jest --watchman=false",
+    "test:watch": "jest --watch",
+    "prepublishOnly": "npm run build && npm test",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "cli",
+    "scaffold",
+    "boilerplate",
+    "linting",
+    "developer-tools",
+    "npm-package",
+    "vscode-extension",
+    "wordpress-plugin",
+    "shopify-app",
+    "typescript",
+    "mern",
+    "code-generator",
+    "devtools"
+  ],
+  "author": {
+    "name": "Usman Ghafoor",
+    "url": "https://github.com/UsmanGhafoor42"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UsmanGhafoor42/devforge-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/UsmanGhafoor42/devforge-cli/issues"
+  },
+  "homepage": "https://github.com/UsmanGhafoor42/devforge-cli#readme",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^11.0.0",
+    "enquirer": "^2.4.1",
+    "fs-extra": "^11.2.0",
+    "ora": "^7.0.1"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.14.0",
+    "@typescript-eslint/eslint-plugin": "^8.58.2",
+    "@typescript-eslint/parser": "^8.58.2",
+    "eslint": "^9.4.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.3.0",
+    "rollup": "^4.18.0",
+    "ts-jest": "^29.1.4",
+    "typescript": "^5.4.5"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "sideEffects": false
+}
