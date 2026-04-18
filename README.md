@@ -1,8 +1,8 @@
-# @usmanghafoor42/devforge-cli
+# @usman_ghafoor/devforge-cli
 
 > A developer utility for scaffolding, linting, and automating boilerplate across npm packages, VS Code extensions, WordPress plugins, and Shopify apps.
 
-[![npm version](https://img.shields.io/npm/v/%40usmanghafoor42%2Fdevforge-cli.svg)](https://www.npmjs.com/package/@usmanghafoor42/devforge-cli)
+[![npm version](https://img.shields.io/npm/v/%40usman_ghafoor%2Fdevforge-cli.svg)](https://www.npmjs.com/package/@usman_ghafoor/devforge-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen)](https://nodejs.org/)
 
@@ -12,7 +12,7 @@
 
 Every time you start a new project — whether it's an npm package, a VS Code extension, a WordPress plugin, or a Shopify app — you spend hours doing the same things: setting up folder structure, copy-pasting boilerplate, configuring linters, wiring up build scripts, and fixing the things you forgot to rename.
 
-**@usmanghafoor42/devforge-cli eliminates all of that.**
+**@usman_ghafoor/devforge-cli eliminates all of that.**
 
 ---
 
@@ -30,10 +30,10 @@ Every time you start a new project — whether it's an npm package, a VS Code ex
 
 ```bash
 # Install globally for CLI usage
-npm install -g @usmanghafoor42/devforge-cli
+npm install -g @usman_ghafoor/devforge-cli
 
 # Or use directly with npx (no install needed)
-npx @usmanghafoor42/devforge-cli scaffold
+npx @usman_ghafoor/devforge-cli scaffold
 ```
 
 ---
