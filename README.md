@@ -1,8 +1,8 @@
-# devforge-cli
+# @usmanghafoor42/devforge-cli
 
 > A developer utility for scaffolding, linting, and automating boilerplate across npm packages, VS Code extensions, WordPress plugins, and Shopify apps.
 
-[![npm version](https://img.shields.io/npm/v/devforge-cli.svg)](https://www.npmjs.com/package/devforge-cli)
+[![npm version](https://img.shields.io/npm/v/%40usmanghafoor42%2Fdevforge-cli.svg)](https://www.npmjs.com/package/@usmanghafoor42/devforge-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen)](https://nodejs.org/)
 
@@ -12,7 +12,7 @@
 
 Every time you start a new project — whether it's an npm package, a VS Code extension, a WordPress plugin, or a Shopify app — you spend hours doing the same things: setting up folder structure, copy-pasting boilerplate, configuring linters, wiring up build scripts, and fixing the things you forgot to rename.
 
-**devforge-cli eliminates all of that.**
+**@usmanghafoor42/devforge-cli eliminates all of that.**
 
 ---
 
@@ -30,10 +30,10 @@ Every time you start a new project — whether it's an npm package, a VS Code ex
 
 ```bash
 # Install globally for CLI usage
-npm install -g devforge-cli
+npm install -g @usmanghafoor42/devforge-cli
 
 # Or use directly with npx (no install needed)
-npx devforge-cli scaffold
+npx @usmanghafoor42/devforge-cli scaffold
 ```
 
 ---
@@ -144,10 +144,10 @@ my-shopify-app/
 
 ## API (programmatic usage)
 
-You can also use devforge-cli as a library in your own Node.js tooling:
+You can also use devforge-scaffold as a library in your own Node.js tooling:
 
 ```typescript
-import { scaffold, lint, audit } from 'devforge-cli';
+import { scaffold, lint, audit } from 'devforge-scaffold';
 
 // Scaffold a new npm package programmatically
 await scaffold({
@@ -163,7 +163,7 @@ const results = await lint({ dir: './my-project' });
 const report = await audit({ dir: './my-project' });
 ```
 
-`devforge-cli` is currently Node.js-focused. The exported API reads and writes the filesystem, so it is not intended for direct browser execution.
+`devforge-scaffold` is currently Node.js-focused. The exported API reads and writes the filesystem, so it is not intended for direct browser execution.
 
 ---
 

@@ -1,5 +1,5 @@
 {
-  "name": "devforge-cli",
+  "name": "@usmanghafoor42/devforge-cli",
   "version": "1.0.0",
   "description": "A developer utility for scaffolding, linting, and automating boilerplate across npm packages, VS Code extensions, WordPress plugins, and Shopify apps.",
   "main": "dist/index.js",
@@ -51,6 +51,9 @@
     "url": "https://github.com/UsmanGhafoor42/devforge-cli/issues"
   },
   "homepage": "https://github.com/UsmanGhafoor42/devforge-cli#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=16.0.0"
   },
