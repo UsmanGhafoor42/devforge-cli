@@ -1,5 +1,5 @@
 {
-  "name": "@usman_ghafoor/devforge-cli",
+  "name": "forgeflux",
   "version": "1.0.0",
   "description": "A developer utility for scaffolding, linting, and automating boilerplate across npm packages, VS Code extensions, WordPress plugins, and Shopify apps.",
   "main": "dist/index.js",
