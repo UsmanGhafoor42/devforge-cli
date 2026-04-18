@@ -1,0 +1,133 @@
+{
+  "name": "forgeflux-extension",
+  "displayName": "forgeflux",
+  "description": "Scaffold modern frontend, mobile, and backend starters with forgeflux directly from VS Code.",
+  "version": "1.0.0",
+  "publisher": "UsmanGhafoor",
+  "author": {
+    "name": "Usman Ghafoor",
+    "url": "https://github.com/UsmanGhafoor42"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UsmanGhafoor42/devforge-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/UsmanGhafoor42/devforge-cli/issues"
+  },
+  "homepage": "https://github.com/UsmanGhafoor42/devforge-cli/tree/main/forgeflux-extension#readme",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Snippets",
+    "Linters",
+    "Other"
+  ],
+  "keywords": [
+    "scaffold",
+    "boilerplate",
+    "forgeflux",
+    "nextjs",
+    "react",
+    "expo",
+    "nestjs",
+    "angular",
+    "generator",
+    "cli",
+    "typescript"
+  ],
+  "icon": "images/icon.png",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "forgeflux.scaffold",
+        "title": "forgeflux: Scaffold New Project",
+        "category": "forgeflux"
+      },
+      {
+        "command": "forgeflux.lint",
+        "title": "forgeflux: Run Lint Check",
+        "category": "forgeflux"
+      },
+      {
+        "command": "forgeflux.audit",
+        "title": "forgeflux: Audit Dependencies",
+        "category": "forgeflux"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "forgeflux.scaffold",
+          "group": "forgeflux@1"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "forgeflux.scaffold"
+        },
+        {
+          "command": "forgeflux.lint"
+        },
+        {
+          "command": "forgeflux.audit"
+        }
+      ]
+    },
+    "snippets": [
+      {
+        "language": "typescript",
+        "path": "./forgeflux.code-snippets"
+      },
+      {
+        "language": "javascript",
+        "path": "./forgeflux.code-snippets"
+      },
+      {
+        "language": "typescriptreact",
+        "path": "./forgeflux.code-snippets"
+      }
+    ],
+    "configuration": {
+      "title": "forgeflux",
+      "properties": {
+        "forgeflux.autoLintOnSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically run forgeflux diagnostics when a file is saved."
+        },
+        "forgeflux.defaultPlatform": {
+          "type": "string",
+          "enum": ["nextjs", "react", "react-native-expo", "nest-js-server", "express-js-server", "angular"],
+          "default": "nextjs",
+          "description": "Default project type used when scaffolding a new project."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile",
+    "test": "node ./out/test/runTest.js",
+    "package": "vsce package",
+    "publish": "vsce publish"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "@vscode/test-electron": "^2.4.0",
+    "@vscode/vsce": "^2.24.0",
+    "eslint": "^9.4.0",
+    "typescript": "^5.4.5"
+  }
+}

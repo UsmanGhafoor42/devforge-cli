@@ -1,0 +1,70 @@
+{
+  "forgeflux: React component": {
+    "prefix": "ff-react",
+    "body": [
+      "export function ${1:ComponentName}() {",
+      "  return <section>${2:Component content}</section>;",
+      "}"
+    ],
+    "description": "Create a simple React component scaffold"
+  },
+  "forgeflux: Next.js route": {
+    "prefix": "ff-next-route",
+    "body": [
+      "export async function GET() {",
+      "  return Response.json({ ${1:status}: '${2:ok}' });",
+      "}"
+    ],
+    "description": "Create a Next.js route handler"
+  },
+  "forgeflux: Express route": {
+    "prefix": "ff-express",
+    "body": [
+      "import { Router } from 'express';",
+      "",
+      "export const ${1:routerName} = Router();",
+      "",
+      "${1:routerName}.get('${2:/}', async (_request, response) => {",
+      "  response.json({ ${3:message}: '${4:ok}' });",
+      "});"
+    ],
+    "description": "Create an Express router scaffold"
+  },
+  "forgeflux: Nest service": {
+    "prefix": "ff-nest-service",
+    "body": [
+      "import { Injectable } from '@nestjs/common';",
+      "",
+      "@Injectable()",
+      "export class ${1:ServiceName} {",
+      "  ${2:methodName}() {",
+      "    return ${3:{ ok: true }};",
+      "  }",
+      "}"
+    ],
+    "description": "Create a NestJS service scaffold"
+  },
+  "forgeflux: Expo screen": {
+    "prefix": "ff-expo-screen",
+    "body": [
+      "export default function ${1:ScreenName}() {",
+      "  return null;",
+      "}"
+    ],
+    "description": "Create an Expo screen scaffold"
+  },
+  "forgeflux: Jest test block": {
+    "prefix": "ff-test",
+    "body": [
+      "describe('${1:module}', () => {",
+      "  it('${2:should do something}', async () => {",
+      "    ${3:// arrange}",
+      "    ${4:// act}",
+      "    ${5:// assert}",
+      "    expect(${6:result}).${7:toBe(${8:expected})};",
+      "  });",
+      "});"
+    ],
+    "description": "Create a Jest test block"
+  }
+}
