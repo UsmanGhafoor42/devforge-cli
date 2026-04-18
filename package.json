@@ -1,6 +1,6 @@
 {
   "name": "forgeflux",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "A developer utility for scaffolding, linting, and automating boilerplate across npm packages, VS Code extensions, WordPress plugins, and Shopify apps.",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",

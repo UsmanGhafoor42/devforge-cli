@@ -11,16 +11,53 @@ describe('devforge-cli', () => {
     await fsExtra.remove(tempRoot);
   });
 
-  it('scaffolds an npm project', async () => {
+  it('scaffolds a react project', async () => {
     const result = await scaffold({
-      type: 'npm',
-      name: 'sample-package',
+      type: 'react',
+      name: 'sample-react-app',
       outputDir: tempRoot
     });
 
     expect(result.success).toBe(true);
     expect(
-      await fsExtra.pathExists(path.join(tempRoot, 'sample-package', 'src', 'index.ts'))
+      await fsExtra.pathExists(path.join(tempRoot, 'sample-react-app', 'src', 'main.tsx'))
+    ).toBe(true);
+  });
+
+  it('scaffolds a nextjs app structure', async () => {
+    const result = await scaffold({
+      type: 'nextjs',
+      name: 'sample-next-app',
+      outputDir: tempRoot
+    });
+
+    expect(result.success).toBe(true);
+    expect(
+      await fsExtra.pathExists(path.join(tempRoot, 'sample-next-app', 'app', 'page.tsx'))
+    ).toBe(true);
+    expect(
+      await fsExtra.pathExists(
+        path.join(tempRoot, 'sample-next-app', 'components', 'ui', 'page-shell.tsx')
+      )
+    ).toBe(true);
+  });
+
+  it('scaffolds a nest server with prisma and auth files', async () => {
+    const result = await scaffold({
+      type: 'nest-js-server',
+      name: 'sample-api',
+      outputDir: tempRoot,
+      orm: 'prisma',
+      database: 'postgresql',
+      authProvider: 'google'
+    });
+
+    expect(result.success).toBe(true);
+    expect(
+      await fsExtra.pathExists(path.join(tempRoot, 'sample-api', 'prisma', 'schema.prisma'))
+    ).toBe(true);
+    expect(
+      await fsExtra.pathExists(path.join(tempRoot, 'sample-api', 'src', 'auth', 'oauth.provider.ts'))
     ).toBe(true);
   });
 

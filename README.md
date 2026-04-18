@@ -1,204 +1,226 @@
 # forgeflux
 
-> A developer utility for scaffolding, linting, and automating boilerplate across npm packages, VS Code extensions, WordPress plugins, and Shopify apps.
+> A TypeScript-first CLI for scaffolding modern frontend apps, mobile apps, and backend servers with cleaner starter structures.
 
 [![npm version](https://img.shields.io/npm/v/forgeflux.svg)](https://www.npmjs.com/package/forgeflux)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen)](https://nodejs.org/)
 
----
-
 ## The problem
 
-Every time you start a new project — whether it's an npm package, a VS Code extension, a WordPress plugin, or a Shopify app — you spend hours doing the same things: setting up folder structure, copy-pasting boilerplate, configuring linters, wiring up build scripts, and fixing the things you forgot to rename.
+Starting a new app still means rebuilding the same folders, config, and architectural baseline over and over. You choose a stack, then spend time shaping directories, wiring TypeScript, separating features, and deciding how auth, ORM, and database setup should fit together.
 
-**forgeflux eliminates all of that.**
-
----
+**forgeflux gives you a cleaner starting point immediately.**
 
 ## Features
 
-- **Project scaffolding** — generate starter project structures for npm, VS Code, WordPress, and Shopify projects
-- **Interactive CLI** — choose a platform and project name through guided prompts
-- **Project checks** — inspect whether a directory has a `package.json` and count declared dependencies
-- **Portable module support** — ships ESM + CJS builds for modern Node.js tooling
-- **TypeScript-first** — fully typed, with `.d.ts` declarations included
-
----
+- Scaffold modern TypeScript starters for frontend, mobile, and server stacks
+- Support `nextjs`, `nextjs-gsap`, `react`, `react-gsap`, `react-native-expo`, `nest-js-server`, `express-js-server`, and `angular`
+- Ask follow-up questions for stacks that need architecture choices like ORM, database, and OAuth provider
+- Generate more professional folder structures instead of a flat starter
+- Ship as both ESM and CJS for Node.js tooling use
 
 ## Installation
 
 ```bash
-# Install globally for CLI usage
 npm install -g forgeflux
+```
 
-# Or use directly with npx (no install needed)
+Or run it without a global install:
+
+```bash
 npx forgeflux scaffold
 ```
 
----
-
 ## Usage
 
-### Scaffold a new project
+The installed package name is `forgeflux`, and the CLI command is currently `devforge`.
+
+### Interactive scaffold
 
 ```bash
 devforge scaffold
 ```
 
-Follow the interactive prompts to choose your platform (npm, VS Code, WordPress, Shopify) and project name. devforge generates the full folder structure, config files, and boilerplate instantly.
-Follow the interactive prompts to choose your platform and project name. `devforge` creates the starter files for that template in a new directory.
-
-### Scaffold a specific platform
+### Direct scaffold examples
 
 ```bash
-devforge scaffold --type npm
-devforge scaffold --type vscode
-devforge scaffold --type wordpress
-devforge scaffold --type shopify
+devforge scaffold --type nextjs --name my-next-app
+devforge scaffold --type nextjs-gsap --name motion-site
+devforge scaffold --type react --name dashboard-ui
+devforge scaffold --type react-gsap --name campaign-site
+devforge scaffold --type angular --name admin-portal
+devforge scaffold --type react-native-expo --name mobile-app --database firebase --auth-provider google
+devforge scaffold --type nest-js-server --name api-server --orm prisma --database postgresql --auth-provider github
+devforge scaffold --type express-js-server --name backend --orm typeorm --database mongodb --auth-provider auth0
 ```
 
-### Check the current project
+### Other commands
 
 ```bash
 devforge lint
-```
-
-This checks whether the current directory contains a `package.json`.
-
-### Summarize dependencies
-
-```bash
 devforge audit
 ```
 
-This reads the current project's `package.json` and reports how many dependencies and devDependencies are declared.
+`lint` checks whether the current directory has a `package.json`.
 
----
+`audit` counts the dependencies and devDependencies declared in `package.json`.
 
-## Scaffolded structures
+## Supported Templates
 
-### npm package
+### Frontend
 
-```
-my-package/
-├── src/
-│   └── index.ts
-├── tests/
-│   └── index.test.ts
-├── .eslintrc.json
-├── .prettierrc
-├── tsconfig.json
-├── rollup.config.js
-├── package.json
-└── README.md
-```
+- `nextjs`
+- `nextjs-gsap`
+- `react`
+- `react-gsap`
+- `angular`
 
-### VS Code extension
+### Mobile
 
-```
-my-extension/
-├── src/
-│   └── extension.ts
-├── .vscode/
-│   └── extensions.json
-├── package.json
-├── tsconfig.json
-└── README.md
-```
+- `react-native-expo`
 
-### WordPress plugin
+### Backend
 
-```
-my-plugin/
-├── includes/
-│   └── bootstrap.php
-├── admin/
-│   └── admin.php
-├── public/
-│   └── public.php
-├── plugin.php
-├── .phpcs.xml
-├── composer.json
-└── README.md
-```
+- `nest-js-server`
+- `express-js-server`
 
-### Shopify app
+## Prompted Options
 
-```
-my-shopify-app/
+Some scaffold types ask for extra architecture choices.
+
+### ORM choices
+
+- `none`
+- `prisma`
+- `typeorm`
+
+### Database choices
+
+- `none`
+- `postgresql`
+- `mongodb`
+- `firebase`
+
+### OAuth provider choices
+
+- `none`
+- `google`
+- `github`
+- `auth0`
+- `clerk`
+
+## Example Structures
+
+### Next.js
+
+```text
+my-next-app/
 ├── app/
-│   ├── routes/
-│   │   └── index.tsx
-│   └── shopify.server.ts
+│   ├── api/
+│   │   └── health/
+│   │       └── route.ts
+│   ├── layout.tsx
+│   └── page.tsx
+├── components/
+│   └── ui/
+│       └── page-shell.tsx
+├── features/
+│   └── home/
+│       └── hero.tsx
+├── lib/
+│   └── config/
+│       └── site.ts
+├── public/
+│   └── brand/
+│       └── README.md
+├── styles/
+│   └── globals.css
+├── next.config.ts
+├── package.json
+├── tsconfig.json
+└── README.md
+```
+
+### Expo
+
+```text
+mobile-app/
+├── app/
+│   ├── _layout.tsx
+│   └── index.tsx
+├── assets/
+│   └── images/
+│       └── README.md
+├── src/
+│   ├── components/
+│   │   └── ui/
+│   │       └── screen.tsx
+│   ├── config/
+│   │   └── app.config.ts
+│   ├── features/
+│   │   └── onboarding/
+│   │       └── welcome-card.tsx
+│   └── services/
+│       └── api/
+│           └── client.ts
+├── package.json
+├── tsconfig.json
+└── README.md
+```
+
+### NestJS Server
+
+```text
+api-server/
+├── src/
+│   ├── common/
+│   │   └── interceptors/
+│   │       └── request-logging.interceptor.ts
+│   ├── config/
+│   │   └── app.config.ts
+│   ├── modules/
+│   │   ├── auth/
+│   │   │   └── auth.module.ts
+│   │   └── health/
+│   │       └── health.controller.ts
+│   ├── auth/
+│   │   └── oauth.provider.ts
+│   ├── main.ts
+│   └── app.module.ts
 ├── prisma/
 │   └── schema.prisma
-├── public/
-│   └── favicon.svg
-├── shopify.app.toml
+├── test/
+│   └── app.e2e-spec.ts
+├── .env.example
 ├── package.json
+├── tsconfig.json
 └── README.md
 ```
 
----
+## Programmatic Usage
 
-## API (programmatic usage)
+You can also use `forgeflux` as a Node.js library:
 
-You can also use devforge-scaffold as a library in your own Node.js tooling:
+```ts
+import { scaffold } from 'forgeflux';
 
-```typescript
-import { scaffold, lint, audit } from 'devforge-scaffold';
-
-// Scaffold a new npm package programmatically
 await scaffold({
-  type: 'npm',
-  name: 'my-package',
-  outputDir: './projects'
+  type: 'nest-js-server',
+  name: 'api-server',
+  orm: 'prisma',
+  database: 'postgresql',
+  authProvider: 'github'
 });
-
-// Run lint check
-const results = await lint({ dir: './my-project' });
-
-// Audit dependencies
-const report = await audit({ dir: './my-project' });
 ```
 
-`devforge-scaffold` is currently Node.js-focused. The exported API reads and writes the filesystem, so it is not intended for direct browser execution.
-
----
-
-## Current scope
-
-The current release focuses on:
-
-- scaffolding starter directories
-- checking whether a Node.js project has a `package.json`
-- counting declared dependencies in `package.json`
-
-Richer lint setup, dependency compatibility analysis, and template customization can be added in future releases.
-
----
+The current API is Node.js-focused because it writes files to disk.
 
 ## Requirements
 
-- Node.js >= 16.0.0
-- npm >= 7.0.0
-
----
-
-## Contributing
-
-Contributions are welcome! Please open an issue first to discuss what you'd like to change.
-
-```bash
-git clone https://github.com/UsmanGhafoor42/devforge-cli.git
-cd devforge-cli
-npm install
-npm run dev
-```
-
----
+- Node.js >= 16
+- npm >= 7
 
 ## License
 
-[MIT](./LICENSE) — Usman Ghafoor
+[MIT](./LICENSE)
