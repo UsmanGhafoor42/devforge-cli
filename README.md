@@ -18,6 +18,8 @@ Starting a new app still means rebuilding the same folders, config, and architec
 - Support `nextjs`, `nextjs-gsap`, `react`, `react-gsap`, `react-native-expo`, `nest-js-server`, `express-js-server`, and `angular`
 - Ask follow-up questions for stacks that need architecture choices like ORM, database, and OAuth provider
 - Generate more professional folder structures instead of a flat starter
+- Generate Prisma-ready auth server scaffolds with a starter `User` model, env files, and setup docs
+- Support `@/*` import aliases in the generated server templates
 - Ship as both ESM and CJS for Node.js tooling use
 
 ## Installation
@@ -52,7 +54,7 @@ devforge scaffold --type react-gsap --name campaign-site
 devforge scaffold --type angular --name admin-portal
 devforge scaffold --type react-native-expo --name mobile-app --database firebase --auth-provider google
 devforge scaffold --type nest-js-server --name api-server --orm prisma --database postgresql --auth-provider github
-devforge scaffold --type express-js-server --name backend --orm typeorm --database mongodb --auth-provider auth0
+devforge scaffold --type express-js-server --name backend --orm prisma --database postgresql --auth-provider auth0
 ```
 
 ### Other commands
@@ -174,24 +176,67 @@ mobile-app/
 ```text
 api-server/
 ├── src/
-│   ├── common/
-│   │   └── interceptors/
-│   │       └── request-logging.interceptor.ts
-│   ├── config/
-│   │   └── app.config.ts
 │   ├── modules/
 │   │   ├── auth/
-│   │   │   └── auth.module.ts
+│   │   │   ├── dto/
+│   │   │   ├── guards/
+│   │   │   ├── interfaces/
+│   │   │   ├── strategies/
+│   │   │   ├── auth.controller.ts
+│   │   │   ├── auth.module.ts
+│   │   │   └── auth.service.ts
 │   │   └── health/
 │   │       └── health.controller.ts
-│   ├── auth/
-│   │   └── oauth.provider.ts
+│   ├── common/
+│   │   └── services/
+│   │       └── email.service.ts
+│   ├── modules/
+│   │   └── prisma/
+│   │       ├── prisma.module.ts
+│   │       └── prisma.service.ts
 │   ├── main.ts
 │   └── app.module.ts
 ├── prisma/
 │   └── schema.prisma
-├── test/
-│   └── app.e2e-spec.ts
+├── .env.example
+├── package.json
+├── tsconfig.json
+└── README.md
+```
+
+### Express Server
+
+```text
+backend/
+├── src/
+│   ├── config/
+│   │   ├── env.ts
+│   │   └── prisma.ts
+│   ├── controllers/
+│   │   └── auth.controller.ts
+│   ├── interfaces/
+│   │   └── auth-request.interface.ts
+│   ├── middleware/
+│   │   ├── auth.middleware.ts
+│   │   ├── error.middleware.ts
+│   │   └── validate.middleware.ts
+│   ├── routes/
+│   │   ├── auth.route.ts
+│   │   └── index.route.ts
+│   ├── schemas/
+│   │   └── auth.schema.ts
+│   ├── services/
+│   │   ├── auth.service.ts
+│   │   └── email.service.ts
+│   ├── types/
+│   │   └── express.d.ts
+│   ├── utils/
+│   │   ├── token.util.ts
+│   │   └── two-factor.util.ts
+│   ├── app.ts
+│   └── server.ts
+├── prisma/
+│   └── schema.prisma
 ├── .env.example
 ├── package.json
 ├── tsconfig.json
@@ -206,7 +251,7 @@ You can also use `forgeflux` as a Node.js library:
 import { scaffold } from 'forgeflux';
 
 await scaffold({
-  type: 'nest-js-server',
+  type: 'express-js-server',
   name: 'api-server',
   orm: 'prisma',
   database: 'postgresql',
@@ -215,6 +260,16 @@ await scaffold({
 ```
 
 The current API is Node.js-focused because it writes files to disk.
+
+## Server Notes
+
+Prisma-based Express and Nest scaffolds now include:
+
+- a starter `User` model in `prisma/schema.prisma`
+- `.env.example`
+- Prisma generate and migrate scripts
+- auth module/service/controller structure
+- TypeScript path alias support for `@/*`
 
 ## Requirements
 

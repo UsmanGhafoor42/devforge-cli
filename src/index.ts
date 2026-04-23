@@ -1,6 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import fsExtra from 'fs-extra';
+import { getNestAuthFiles } from './templates/nestjs-auth';
+import { getExpressAuthFiles } from './templates/express-auth';
 
 export type ProjectType =
   | 'nextjs'
@@ -97,14 +99,29 @@ function parentDirs(files: TemplateFile[]): string[] {
     .filter(unique);
 }
 
-function typeScriptPackageJson(name: string, scripts: Record<string, string>): string {
-  return json({
+function buildPackageJson(
+  name: string,
+  scripts: Record<string, string>,
+  deps?: Record<string, string>,
+  devDeps?: Record<string, string>,
+  moduleType?: string
+): string {
+  const pkg: Record<string, unknown> = {
     name: packageName(name),
     version: '0.1.0',
     private: true,
-    type: 'module',
     scripts
-  });
+  };
+  if (moduleType !== undefined) {
+    pkg.type = moduleType;
+  }
+  if (deps && Object.keys(deps).length > 0) {
+    pkg.dependencies = deps;
+  }
+  if (devDeps && Object.keys(devDeps).length > 0) {
+    pkg.devDependencies = devDeps;
+  }
+  return json(pkg);
 }
 
 function sharedServerNotes(options: ScaffoldOptions): string {
@@ -115,13 +132,59 @@ function sharedServerNotes(options: ScaffoldOptions): string {
   ].join('\n');
 }
 
+function serverReadme(
+  name: string,
+  title: string,
+  options: ScaffoldOptions,
+  runSteps: string[]
+): string {
+  const prismaSetup =
+    options.orm === 'prisma'
+      ? [
+          '## Prisma Setup',
+          '',
+          '1. Copy `.env.example` to `.env`',
+          '2. Set `DATABASE_URL`',
+          '3. Run `npm run prisma:generate`',
+          `4. ${options.database === 'mongodb' ? 'Start your database and begin development' : 'Run your first migration with `npx prisma migrate dev --name init`'}`,
+          '',
+        ].join('\n')
+      : '';
+
+  return [
+    `# ${name}`,
+    '',
+    `${title} scaffolded with forgeflux.`,
+    '',
+    '## Architecture Choices',
+    '',
+    `- ORM: ${options.orm ?? 'none'}`,
+    `- Database: ${options.database ?? 'none'}`,
+    `- OAuth provider: ${options.authProvider ?? 'none'}`,
+    '',
+    '## Getting Started',
+    '',
+    '1. Install dependencies with `npm install`',
+    ...runSteps.map((step, index) => `${index + 2}. ${step}`),
+    '',
+    prismaSetup,
+    '## Environment',
+    '',
+    'Review `.env.example` and fill in the required values before running the project.',
+    '',
+  ].join('\n');
+}
+
 function optionalServerFiles(options: ScaffoldOptions): TemplateFile[] {
   const files: TemplateFile[] = [];
 
   if (options.orm === 'prisma') {
     files.push({
       path: 'prisma/schema.prisma',
-      content: `generator client {\n  provider = "prisma-client-js"\n}\n\ndatasource db {\n  provider = "${options.database === 'mongodb' ? 'mongodb' : 'postgresql'}"\n  url      = env("DATABASE_URL")\n}\n`
+      content:
+        options.database === 'mongodb'
+          ? `generator client {\n  provider = "prisma-client-js"\n}\n\ndatasource db {\n  provider = "mongodb"\n  url      = env("DATABASE_URL")\n}\n\nmodel User {\n  id                     String   @id @default(auto()) @map("_id") @db.ObjectId\n  email                  String   @unique\n  name                   String\n  password               String\n  emailVerified          Boolean  @default(false)\n  emailVerificationToken String?\n  resetPasswordToken     String?\n  resetPasswordExpires   DateTime?\n  twoFactorEnabled       Boolean  @default(false)\n  twoFactorSecret        String?\n  createdAt              DateTime @default(now())\n  updatedAt              DateTime @updatedAt\n}\n`
+          : `generator client {\n  provider = "prisma-client-js"\n}\n\ndatasource db {\n  provider = "postgresql"\n  url      = env("DATABASE_URL")\n}\n\nmodel User {\n  id                     String   @id @default(cuid())\n  email                  String   @unique\n  name                   String\n  password               String\n  emailVerified          Boolean  @default(false)\n  emailVerificationToken String?\n  resetPasswordToken     String?\n  resetPasswordExpires   DateTime?\n  twoFactorEnabled       Boolean  @default(false)\n  twoFactorSecret        String?\n  createdAt              DateTime @default(now())\n  updatedAt              DateTime @updatedAt\n}\n`
     });
   }
 
@@ -175,7 +238,7 @@ function appTemplate(type: ProjectType, options: ScaffoldOptions): TemplateDefin
           { path: 'styles/globals.css', content: ':root { color-scheme: light; }\n' },
           { path: 'public/brand/README.md', content: markdown('Assets', 'Brand assets live here.') },
           { path: 'next.config.ts', content: `import type { NextConfig } from 'next';\n\nconst nextConfig: NextConfig = {};\nexport default nextConfig;\n` },
-          { path: 'package.json', content: typeScriptPackageJson(name, { dev: 'next dev', build: 'next build', start: 'next start' }) },
+          { path: 'package.json', content: buildPackageJson(name, { dev: 'next dev', build: 'next build', start: 'next start' }, { next: '^15.1.0', react: '^19.0.0', 'react-dom': '^19.0.0' }, { typescript: '^5.7.0', '@types/react': '^19.0.0', '@types/react-dom': '^19.0.0', '@types/node': '^22.0.0' }) },
           { path: 'tsconfig.json', content: json({ compilerOptions: { target: 'ES2022', lib: ['dom', 'dom.iterable', 'es2022'], jsx: 'preserve', strict: true } }) },
           { path: 'README.md', content: markdown(name, 'Next.js App Router + TypeScript starter scaffolded with forgeflux.') }
         ]
@@ -191,7 +254,7 @@ function appTemplate(type: ProjectType, options: ScaffoldOptions): TemplateDefin
           { path: 'features/home/showcase.tsx', content: `export function Showcase() {\n  return <section>Animation showcase</section>;\n}\n` },
           { path: 'styles/globals.css', content: ':root { color-scheme: light; }\n' },
           { path: 'next.config.ts', content: `import type { NextConfig } from 'next';\n\nconst nextConfig: NextConfig = {};\nexport default nextConfig;\n` },
-          { path: 'package.json', content: typeScriptPackageJson(name, { dev: 'next dev', build: 'next build', start: 'next start' }) },
+          { path: 'package.json', content: buildPackageJson(name, { dev: 'next dev', build: 'next build', start: 'next start' }, { next: '^15.1.0', react: '^19.0.0', 'react-dom': '^19.0.0', gsap: '^3.12.0' }, { typescript: '^5.7.0', '@types/react': '^19.0.0', '@types/react-dom': '^19.0.0', '@types/node': '^22.0.0' }) },
           { path: 'tsconfig.json', content: json({ compilerOptions: { target: 'ES2022', lib: ['dom', 'dom.iterable', 'es2022'], jsx: 'preserve', strict: true } }) },
           { path: 'README.md', content: markdown(name, 'Next.js + GSAP + TypeScript starter scaffolded with forgeflux.') }
         ]
@@ -206,8 +269,9 @@ function appTemplate(type: ProjectType, options: ScaffoldOptions): TemplateDefin
           { path: 'src/features/home/home-page.tsx', content: `export function HomePage() {\n  return <section>Home feature</section>;\n}\n` },
           { path: 'src/styles/index.css', content: ':root { font-family: ui-sans-serif, system-ui, sans-serif; }\n' },
           { path: 'public/favicon.svg', content: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"></svg>\n' },
-          { path: 'vite.config.ts', content: `import { defineConfig } from 'vite';\n\nexport default defineConfig({});\n` },
-          { path: 'package.json', content: typeScriptPackageJson(name, { dev: 'vite', build: 'tsc && vite build', preview: 'vite preview' }) },
+          { path: 'index.html', content: `<!DOCTYPE html>\n<html lang="en">\n<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>${name}</title></head>\n<body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body>\n</html>\n` },
+          { path: 'vite.config.ts', content: `import { defineConfig } from 'vite';\nimport react from '@vitejs/plugin-react';\n\nexport default defineConfig({ plugins: [react()] });\n` },
+          { path: 'package.json', content: buildPackageJson(name, { dev: 'vite', build: 'tsc && vite build', preview: 'vite preview' }, { react: '^19.0.0', 'react-dom': '^19.0.0' }, { vite: '^6.0.0', '@vitejs/plugin-react': '^4.3.0', typescript: '^5.7.0', '@types/react': '^19.0.0', '@types/react-dom': '^19.0.0' }, 'module') },
           { path: 'tsconfig.json', content: json({ compilerOptions: { target: 'ES2022', jsx: 'react-jsx', strict: true } }) },
           { path: 'README.md', content: markdown(name, 'React + Vite + TypeScript starter scaffolded with forgeflux.') }
         ]
@@ -221,8 +285,9 @@ function appTemplate(type: ProjectType, options: ScaffoldOptions): TemplateDefin
           { path: 'src/components/marketing/hero-motion.tsx', content: `export function HeroMotion() {\n  return <section>GSAP-ready React hero for ${name}</section>;\n}\n` },
           { path: 'src/lib/animations/hero-timeline.ts', content: `export function buildHeroTimeline() {\n  return 'gsap timeline placeholder';\n}\n` },
           { path: 'src/styles/index.css', content: ':root { font-family: ui-sans-serif, system-ui, sans-serif; }\n' },
-          { path: 'vite.config.ts', content: `import { defineConfig } from 'vite';\n\nexport default defineConfig({});\n` },
-          { path: 'package.json', content: typeScriptPackageJson(name, { dev: 'vite', build: 'tsc && vite build', preview: 'vite preview' }) },
+          { path: 'index.html', content: `<!DOCTYPE html>\n<html lang="en">\n<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>${name}</title></head>\n<body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body>\n</html>\n` },
+          { path: 'vite.config.ts', content: `import { defineConfig } from 'vite';\nimport react from '@vitejs/plugin-react';\n\nexport default defineConfig({ plugins: [react()] });\n` },
+          { path: 'package.json', content: buildPackageJson(name, { dev: 'vite', build: 'tsc && vite build', preview: 'vite preview' }, { react: '^19.0.0', 'react-dom': '^19.0.0', gsap: '^3.12.0' }, { vite: '^6.0.0', '@vitejs/plugin-react': '^4.3.0', typescript: '^5.7.0', '@types/react': '^19.0.0', '@types/react-dom': '^19.0.0' }, 'module') },
           { path: 'tsconfig.json', content: json({ compilerOptions: { target: 'ES2022', jsx: 'react-jsx', strict: true } }) },
           { path: 'README.md', content: markdown(name, 'React + GSAP + TypeScript starter scaffolded with forgeflux.') }
         ]
@@ -238,8 +303,9 @@ function appTemplate(type: ProjectType, options: ScaffoldOptions): TemplateDefin
           { path: 'src/services/api/client.ts', content: `export const apiClient = { baseUrl: process.env.EXPO_PUBLIC_API_URL ?? '' };\n` },
           { path: 'src/config/app.config.ts', content: `export const appConfig = {\n  authProvider: '${options.authProvider ?? 'none'}',\n  database: '${options.database ?? 'none'}'\n};\n` },
           { path: 'assets/images/README.md', content: markdown('Assets', 'Expo image assets live here.') },
-          { path: 'package.json', content: typeScriptPackageJson(name, { dev: 'expo start', android: 'expo run:android', ios: 'expo run:ios' }) },
-          { path: 'tsconfig.json', content: json({ compilerOptions: { target: 'ES2022', jsx: 'react-jsx', strict: true } }) },
+          { path: 'app.json', content: json({ expo: { name: name, slug: packageName(name), version: '1.0.0', scheme: packageName(name), platforms: ['ios', 'android'] } }) },
+          { path: 'package.json', content: buildPackageJson(name, { dev: 'expo start', android: 'expo run:android', ios: 'expo run:ios' }, { expo: '^52.0.0', 'expo-router': '^4.0.0', 'expo-status-bar': '^2.0.0', react: '^18.3.0', 'react-native': '^0.76.0' }, { '@types/react': '^18.3.0', typescript: '^5.7.0' }) },
+          { path: 'tsconfig.json', content: json({ compilerOptions: { target: 'ES2022', module: 'ESNext', moduleResolution: 'Bundler', jsx: 'react-jsx', strict: true, baseUrl: '.', paths: { '@/*': ['src/*'] } } }) },
           { path: 'README.md', content: markdown(name, `Expo Router + TypeScript starter scaffolded with forgeflux.\n\n${sharedServerNotes(options)}`) }
         ]
       };
@@ -247,17 +313,11 @@ function appTemplate(type: ProjectType, options: ScaffoldOptions): TemplateDefin
       return {
         description: 'NestJS server starter with TypeScript',
         files: [
-          { path: 'src/main.ts', content: `async function bootstrap() {\n  console.log('Starting ${name}');\n}\n\nvoid bootstrap();\n` },
-          { path: 'src/app.module.ts', content: `export class AppModule {}\n` },
-          { path: 'src/modules/health/health.controller.ts', content: `export class HealthController {}\n` },
-          { path: 'src/modules/auth/auth.module.ts', content: `export class AuthModule {}\n` },
-          { path: 'src/common/interceptors/request-logging.interceptor.ts', content: `export class RequestLoggingInterceptor {}\n` },
-          { path: 'src/config/app.config.ts', content: `export const appConfig = {\n  orm: '${options.orm ?? 'none'}',\n  database: '${options.database ?? 'none'}',\n  authProvider: '${options.authProvider ?? 'none'}'\n};\n` },
-          { path: 'test/app.e2e-spec.ts', content: `describe('app', () => {\n  it('bootstraps', () => {\n    expect(true).toBe(true);\n  });\n});\n` },
-          { path: '.env.example', content: `DATABASE_URL=\nOAUTH_CLIENT_ID=\nOAUTH_CLIENT_SECRET=\n` },
-          { path: 'package.json', content: typeScriptPackageJson(name, { start: 'nest start', 'start:dev': 'nest start --watch', build: 'nest build' }) },
-          { path: 'tsconfig.json', content: json({ compilerOptions: { target: 'ES2022', module: 'commonjs', strict: true } }) },
-          { path: 'README.md', content: markdown(name, `NestJS + TypeScript starter scaffolded with forgeflux.\n\n${sharedServerNotes(options)}`) },
+          ...getNestAuthFiles(name),
+          { path: '.env.example', content: `PORT=3000\nJWT_SECRET=change-me-in-production\nDATABASE_URL=\nSMTP_HOST=smtp.ethereal.email\nSMTP_PORT=587\nSMTP_USER=\nSMTP_PASS=\n` },
+          { path: 'package.json', content: buildPackageJson(name, { start: 'node dist/main.js', 'start:dev': 'nest start --watch', build: 'nest build', 'prisma:generate': 'prisma generate', 'prisma:migrate': 'prisma migrate dev --name init' }, { '@nestjs/common': '^10.4.0', '@nestjs/core': '^10.4.0', '@nestjs/platform-express': '^10.4.0', '@nestjs/jwt': '^10.2.0', '@nestjs/passport': '^10.0.0', '@prisma/client': '^6.0.0', 'reflect-metadata': '^0.2.0', rxjs: '^7.8.0', bcrypt: '^5.1.0', nodemailer: '^6.9.0', 'class-validator': '^0.14.0', 'class-transformer': '^0.5.0', passport: '^0.7.0', 'passport-jwt': '^4.0.0', speakeasy: '^2.0.0', qrcode: '^1.5.0' }, { '@nestjs/cli': '^10.4.0', '@nestjs/schematics': '^10.2.0', '@types/express': '^5.0.0', '@types/bcrypt': '^5.0.0', '@types/nodemailer': '^6.4.0', '@types/passport-jwt': '^4.0.0', '@types/qrcode': '^1.5.0', '@types/speakeasy': '^2.0.10', prisma: '^6.0.0', typescript: '^5.7.0', 'ts-node': '^10.9.0', 'tsconfig-paths': '^4.2.0' }) },
+          { path: 'tsconfig.json', content: json({ compilerOptions: { target: 'ES2021', module: 'commonjs', moduleResolution: 'node', strict: true, emitDecoratorMetadata: true, experimentalDecorators: true, allowSyntheticDefaultImports: true, outDir: './dist', baseUrl: './src', paths: { '@/*': ['*'] }, skipLibCheck: true, strictNullChecks: true, declaration: true, removeComments: true, sourceMap: true, incremental: true } }) },
+          { path: 'README.md', content: serverReadme(name, 'NestJS + TypeScript server', options, ['Copy `.env.example` to `.env`', 'Run `npm run prisma:generate`', `${options.orm === 'prisma' && options.database !== 'mongodb' ? 'Run `npm run prisma:migrate`' : 'Review the generated Prisma schema if needed'}`, 'Run `npm run start:dev`']) },
           ...optionalServerFiles(options)
         ]
       };
@@ -265,15 +325,11 @@ function appTemplate(type: ProjectType, options: ScaffoldOptions): TemplateDefin
       return {
         description: 'Express server starter with TypeScript',
         files: [
-          { path: 'src/server.ts', content: `console.log('Boot ${name}');\n` },
-          { path: 'src/app.ts', content: `export const app = {};\n` },
-          { path: 'src/routes/index.route.ts', content: `export const indexRoute = {};\n` },
-          { path: 'src/modules/auth/auth.service.ts', content: `export const authService = { provider: '${options.authProvider ?? 'none'}' };\n` },
-          { path: 'src/config/env.ts', content: `export const env = {\n  database: '${options.database ?? 'none'}',\n  orm: '${options.orm ?? 'none'}'\n};\n` },
-          { path: '.env.example', content: `DATABASE_URL=\nPORT=3001\n` },
-          { path: 'package.json', content: typeScriptPackageJson(name, { dev: 'tsx watch src/server.ts', build: 'tsc', start: 'node dist/server.js' }) },
-          { path: 'tsconfig.json', content: json({ compilerOptions: { target: 'ES2022', module: 'NodeNext', strict: true, outDir: 'dist' } }) },
-          { path: 'README.md', content: markdown(name, `Express + TypeScript starter scaffolded with forgeflux.\n\n${sharedServerNotes(options)}`) },
+          ...getExpressAuthFiles(name),
+          { path: '.env.example', content: `PORT=3001\nJWT_SECRET=change-me-in-production\nDATABASE_URL=\nSMTP_HOST=smtp.ethereal.email\nSMTP_PORT=587\nSMTP_USER=\nSMTP_PASS=\n` },
+          { path: 'package.json', content: buildPackageJson(name, { dev: 'tsx watch --tsconfig tsconfig.json src/server.ts', build: 'tsc && tsc-alias', start: 'node dist/server.js', 'prisma:generate': 'prisma generate', 'prisma:migrate': 'prisma migrate dev --name init' }, { '@prisma/client': '^6.0.0', express: '^5.0.0', cors: '^2.8.0', bcrypt: '^5.1.0', jsonwebtoken: '^9.0.0', nodemailer: '^6.9.0', zod: '^3.23.0', speakeasy: '^2.0.0', qrcode: '^1.5.0', dotenv: '^16.4.0' }, { tsx: '^4.19.0', typescript: '^5.7.0', '@types/node': '^22.0.0', '@types/express': '^5.0.0', '@types/cors': '^2.8.0', '@types/bcrypt': '^5.0.0', '@types/jsonwebtoken': '^9.0.0', '@types/nodemailer': '^6.4.0', '@types/qrcode': '^1.5.0', '@types/speakeasy': '^2.0.10', prisma: '^6.0.0', 'tsc-alias': '^1.8.10' }, 'module') },
+          { path: 'tsconfig.json', content: json({ compilerOptions: { target: 'ES2022', module: 'ESNext', moduleResolution: 'Bundler', strict: true, outDir: 'dist', rootDir: 'src', baseUrl: './src', paths: { '@/*': ['*'] }, esModuleInterop: true, skipLibCheck: true, types: ['node'] } }) },
+          { path: 'README.md', content: serverReadme(name, 'Express + TypeScript server', options, ['Copy `.env.example` to `.env`', 'Run `npm run prisma:generate`', `${options.orm === 'prisma' && options.database !== 'mongodb' ? 'Run `npm run prisma:migrate`' : 'Review the generated Prisma schema if needed'}`, 'Run `npm run dev`']) },
           ...optionalServerFiles(options)
         ]
       };
@@ -287,7 +343,8 @@ function appTemplate(type: ProjectType, options: ScaffoldOptions): TemplateDefin
           { path: 'src/app/core/config/app.config.ts', content: `export const appConfig = { production: false };\n` },
           { path: 'src/app/features/home/home.component.ts', content: `export class HomeComponent {}\n` },
           { path: 'angular.json', content: json({ version: 1, projects: { [packageName(name)]: {} } }) },
-          { path: 'package.json', content: typeScriptPackageJson(name, { start: 'ng serve', build: 'ng build', test: 'ng test' }) },
+          { path: 'src/index.html', content: `<!DOCTYPE html>\n<html lang="en">\n<head><meta charset="UTF-8" /><title>${name}</title><base href="/"></head>\n<body><app-root></app-root></body>\n</html>\n` },
+          { path: 'package.json', content: buildPackageJson(name, { start: 'ng serve', build: 'ng build', test: 'ng test' }, { '@angular/core': '^19.0.0', '@angular/common': '^19.0.0', '@angular/compiler': '^19.0.0', '@angular/platform-browser': '^19.0.0', '@angular/platform-browser-dynamic': '^19.0.0', '@angular/router': '^19.0.0', rxjs: '^7.8.0', 'zone.js': '^0.15.0', tslib: '^2.8.0' }, { '@angular/cli': '^19.0.0', '@angular/compiler-cli': '^19.0.0', '@angular/build': '^19.0.0', typescript: '^5.7.0' }) },
           { path: 'tsconfig.json', content: json({ compilerOptions: { target: 'ES2022', module: 'ES2022', strict: true } }) },
           { path: 'README.md', content: markdown(name, 'Angular standalone + TypeScript starter scaffolded with forgeflux.') }
         ]

@@ -61,6 +61,62 @@ describe('devforge-cli', () => {
     ).toBe(true);
   });
 
+  it('creates a prisma user model for express prisma scaffolds', async () => {
+    await scaffold({
+      type: 'express-js-server',
+      name: 'express-api',
+      outputDir: tempRoot,
+      orm: 'prisma',
+      database: 'postgresql',
+      authProvider: 'auth0'
+    });
+
+    const schema = await fsExtra.readFile(
+      path.join(tempRoot, 'express-api', 'prisma', 'schema.prisma'),
+      'utf8'
+    );
+    const authService = await fsExtra.readFile(
+      path.join(tempRoot, 'express-api', 'src', 'services', 'auth.service.ts'),
+      'utf8'
+    );
+    const tsconfig = await fsExtra.readFile(
+      path.join(tempRoot, 'express-api', 'tsconfig.json'),
+      'utf8'
+    );
+
+    expect(schema).toContain('model User');
+    expect(authService).toContain("from '@/");
+    expect(tsconfig).toContain('"@/*"');
+  });
+
+  it('creates alias-based nest auth files for prisma scaffolds', async () => {
+    await scaffold({
+      type: 'nest-js-server',
+      name: 'nest-api',
+      outputDir: tempRoot,
+      orm: 'prisma',
+      database: 'postgresql',
+      authProvider: 'github'
+    });
+
+    const schema = await fsExtra.readFile(
+      path.join(tempRoot, 'nest-api', 'prisma', 'schema.prisma'),
+      'utf8'
+    );
+    const authService = await fsExtra.readFile(
+      path.join(tempRoot, 'nest-api', 'src', 'modules', 'auth', 'auth.service.ts'),
+      'utf8'
+    );
+    const tsconfig = await fsExtra.readFile(
+      path.join(tempRoot, 'nest-api', 'tsconfig.json'),
+      'utf8'
+    );
+
+    expect(schema).toContain('model User');
+    expect(authService).toContain("from '@/");
+    expect(tsconfig).toContain('"@/*"');
+  });
+
   it('reports missing package.json during lint', async () => {
     const result = await lint({ dir: tempRoot });
 
